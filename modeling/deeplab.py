@@ -28,10 +28,10 @@ class DeepLab(nn.Module):
     def forward(self, input):
         x, low_level_feat = self.backbone(input)
         x = self.aspp(x)
-        x = self.decoder(x, low_level_feat)
-        x = F.interpolate(x, size=input.size()[2:], mode='bilinear', align_corners=True)
-
-        return x
+        inst,sem = self.decoder(x, low_level_feat)
+        sem = F.interpolate(sem, size=input.size()[2:], mode='bilinear', align_corners=True)
+        inst = F.interpolate(inst, size=input.size()[2:], mode='bilinear', align_corners=True)
+        return inst,sem
 
     def freeze_bn(self):
         for m in self.modules():

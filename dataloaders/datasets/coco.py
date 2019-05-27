@@ -19,7 +19,7 @@ class COCOSegmentation(Dataset):
 
     def __init__(self,
                  args,
-                 base_dir='/data/shaan/'
+                 base_dir='/data/shaan/',
                  split='train',
                  year='2017'):
         super().__init__()

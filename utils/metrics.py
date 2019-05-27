@@ -70,6 +70,9 @@ def compute_overlaps_masks(masks1, masks2):
     return overlaps
 
 def get_bin_map(true_msk,pred_msk):
+    h = 513
+    w = 513
+    
     ids = list(set(np.unique(true_msk)) -set([0,99]))
     all_collate = np.zeros((256,256,len(ids),2))
     #     for i,val in enumerate(ids):
@@ -77,8 +80,8 @@ def get_bin_map(true_msk,pred_msk):
     #         pmsk = (pred_msk == val)*1
     #         all_collate[:,:,i,0] = tsmsk
     #         all_collate[:,:,i,1] = pmsk
-    all_collate[:,:,:,0] = true_msk.unsqueeze(2).expand(256,256,len(ids)).float() == (torch.ones((256,256,len(ids)))*torch.Tensor(ids)).float()
-    all_collate[:,:,:,1] = pred_msk.unsqueeze(2).expand(256,256,len(ids)).float() == (torch.ones((256,256,len(ids)))*torch.Tensor(ids)).float()
+    all_collate[:,:,:,0] = true_msk.unsqueeze(2).expand(w,h,len(ids)).float() == (torch.ones((w,h,len(ids)))*torch.Tensor(ids)).float()
+    all_collate[:,:,:,1] = pred_msk.unsqueeze(2).expand(w,h,len(ids)).float() == (torch.ones((w,h,len(ids)))*torch.Tensor(ids)).float()
     
     
     return compute_overlaps_masks(all_collate[:,:,:,1],all_collate[:,:,:,0])

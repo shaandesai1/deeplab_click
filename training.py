@@ -15,18 +15,15 @@ import torchvision.models as models
 from torch.nn import DataParallel
 import torchvision.utils as vutils
 from tensorboardX import SummaryWriter
-from sklearn.metrics import jaccard_score as jacc
 from pycocotools.coco import COCO
 
 
-from dataloaders import make_data_loader
 from modeling.sync_batchnorm.replicate import patch_replication_callback
 from modeling.deeplab import *
 from utils.loss import SegmentationLosses
 from utils.calculate_weights import calculate_weigths_labels
 from utils.lr_scheduler import LR_Scheduler
 from utils.saver import Saver
-from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
 from utils.metrics import get_bin_map
 
@@ -71,9 +68,9 @@ train_df = COCOSegmentation(args, split='train', year='2017')
 train_dataloader = DataLoader(train_df, collate_fn = my_collate, batch_size=32, shuffle=True)
 
 val_df = COCOSegmentation(args, split='val', year='2017')
-train_dataloader = DataLoader(val_df, collate_fn = my_collate, batch_size=32, shuffle=True)
+val_dataloader = DataLoader(val_df, collate_fn = my_collate, batch_size=32, shuffle=True)
 
-
+data_dict = {'train':train_dataloader,'validation':val_dataloader}
 
 
 # freeze all

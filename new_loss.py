@@ -25,6 +25,8 @@ class DiscriminativeLoss(_Loss):
         self.delta_var = delta_var
         self.norm = norm
         self.usegpu = usegpu
+        self.h = 513
+        self.w = 513
         assert self.norm in [1, 2]
     
     def forward(self, input, target, n_clusters,epoch):
@@ -32,7 +34,7 @@ class DiscriminativeLoss(_Loss):
         return self._discriminative_loss(input, target, n_clusters,epoch)
     
     def _discriminative_loss(self, image, instances_bs, annid,epoch):
-        class_loss = torch.zeros(40,4).cuda()
+        class_loss = torch.zeros(20,4).cuda()
         coeffs = torch.zeros(3).cuda()
         coeffs[0] = self.alpha
         coeffs[1] = self.beta
@@ -80,7 +82,7 @@ class DiscriminativeLoss(_Loss):
             #print(class_dist)
         
         #print(class_loss)
-        scaled_loss = class_loss[:,:3]/(class_loss[:,3].unsqueeze(1).expand(40,3)+self.eps)
+        scaled_loss = class_loss[:,:3]/(class_loss[:,3].unsqueeze(1).expand(20,3)+self.eps)
         loss = torch.mm(scaled_loss,coeffs.view(-1,1)).sum() + class_dist/image.size(0)
         return loss
     
@@ -96,7 +98,7 @@ class DiscriminativeLoss(_Loss):
         for i in range(instances.shape[1]):
             st = torch.nonzero(instances[0,i,:,:])
             if len(st) > 0:
-                sample_pt = st[np.random.randint(0,len(st),size=max(1,int(((100-3*epoch)/100)*len(st))))]
+                sample_pt = st[np.random.randint(0,len(st),size=max(1,int(((100-2*epoch)/100)*len(st))))]
                 collection.append(result[:,i,sample_pt[:,0],sample_pt[:,1]].sum(dim=1)/(instances[0,i,sample_pt[:,0],sample_pt[:,1]].sum()+self.eps))
             else:
                 collection.append(torch.zeros(img.shape[0]).float().cuda())
@@ -108,8 +110,8 @@ class DiscriminativeLoss(_Loss):
     def cluster_vars(self,img,instances,means):
         #feats,clusters,h*w
         mn_shape = means.shape
-        means = means.unsqueeze(2).expand(mn_shape[0],mn_shape[1],256*256)
-        means = means.view(mn_shape[0],mn_shape[1],256,256)
+        means = means.unsqueeze(2).expand(mn_shape[0],mn_shape[1],self.h*self.w)
+        means = means.view(mn_shape[0],mn_shape[1],self.h,self.w)
         var = (torch.clamp(torch.norm((img - means),2,0) - self.delta_var,min=0)**2) * instances[0,:,:,:]
         
         new_var = var.sum([1,2])/(instances[0,:].sum([1,2])+self.eps)
