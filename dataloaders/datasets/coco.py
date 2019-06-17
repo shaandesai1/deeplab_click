@@ -18,23 +18,24 @@ class COCOSegmentation(Dataset):
         1, 64, 20, 63, 7, 72]
 
     def __init__(self,
-                 args,
+                 
                  base_dir='/data/shaan/',
                  split='train',
                  year='2017'):
         super().__init__()
         ann_file = os.path.join(base_dir, 'annotations/instances_{}{}.json'.format(split, year))
         ids_file = os.path.join(base_dir, 'annotations/{}_ids_{}.pth'.format(split, year))
-        self.img_dir = os.path.join(base_dir, '/{}{}'.format(split, year))
+        self.img_dir = os.path.join(base_dir, '{}{}'.format(split, year))
         self.split = split
         self.coco = COCO(ann_file)
         self.coco_mask = mask
+        self.bs = 513
+        self.cs = 513
         if os.path.exists(ids_file):
             self.ids = torch.load(ids_file)
         else:
             ids = list(self.coco.imgs.keys())
             self.ids = self._preprocess(ids, ids_file)
-        self.args = args
 
     def __getitem__(self, index):
         _img, _target,instances,annid,coords = self._make_img_gt_point_pair(index)
@@ -140,7 +141,7 @@ class COCOSegmentation(Dataset):
     def transform_tr(self, sample):
         composed_transforms = transforms.Compose([
             tr.RandomHorizontalFlip(),
-            tr.RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
+            tr.RandomScaleCrop(base_size=self.bs, crop_size=self.cs),
             tr.RandomGaussianBlur(),
             tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             tr.ToTensor()])
@@ -150,7 +151,7 @@ class COCOSegmentation(Dataset):
     def transform_val(self, sample):
 
         composed_transforms = transforms.Compose([
-            tr.FixScaleCrop(crop_size=self.args.crop_size),
+            tr.FixScaleCrop(crop_size=self.cs),
             tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             tr.ToTensor()])
 

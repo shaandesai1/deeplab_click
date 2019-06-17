@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 
 class Evaluator(object):
     def __init__(self, num_class):
@@ -73,8 +73,8 @@ def get_bin_map(true_msk,pred_msk):
     h = 513
     w = 513
     
-    ids = list(set(np.unique(true_msk)) -set([0,99]))
-    all_collate = np.zeros((256,256,len(ids),2))
+    ids = list(set(np.unique(true_msk)) -set([99]))
+    all_collate = np.zeros((w,h,len(ids),2))
     #     for i,val in enumerate(ids):
     #         tsmsk = (true_msk == val)*1
     #         pmsk = (pred_msk == val)*1
